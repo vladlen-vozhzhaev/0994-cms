@@ -9,18 +9,55 @@ export class EditPage extends React.Component{
         this.jsEditor = createRef();
         this.handleSave = this.handleSave.bind(this);
         this.handleInputChange = this.handleInputChange.bind(this);
+        this.state = {
+            name: "",
+            title: "",
+            pageId: ""
+        }
     }
     componentDidMount() {
         const uri = window.location.pathname.split("/");
         const pageId = uri[uri.length-1];
-        // fetch()
-        this.htmlEditor.current.editor.setValue("а тут что-то из базы данных")
+        this.setState({pageId:pageId})
+        let formData = new FormData();
+        formData.append('pageId',pageId);
+        fetch("http://0994.vozhzhaev.ru/getPageByIdJSON",{
+            method: 'POST',
+            body: formData
+        }).then(response=>response.json())
+            .then(page=>{
+                this.htmlEditor.current.editor.setValue(page.html);
+                this.cssEditor.current.editor.setValue(page.css);
+                this.jsEditor.current.editor.setValue(page.js);
+                this.setState({
+                    name: page.name,
+                    title: page.title
+                })
+            })
+
     }
     handleSave(){
-        // Отправились изменнёные значения на сервер
+        let formData = new FormData();
+        formData.append('pageId',this.state.pageId);
+        formData.append('name',this.state.name);
+        formData.append('title',this.state.title);
+        formData.append('html',this.htmlEditor.current.editor.getValue())
+        formData.append('css',this.cssEditor.current.editor.getValue());
+        formData.append('js',this.jsEditor.current.editor.getValue());
+        fetch("http://0994.vozhzhaev.ru/editPageById",{
+            method: 'POST',
+            body: formData
+        }).then(response=>response.json())
+            .then(result=>console.log('ВСЁ ОК'))
     }
-    handleInputChange(){
+    handleInputChange(event){
+        const target = event.target;
+        const value = target.value;
+        const name = target.name;
 
+        this.setState({
+            [name]: value
+        })
     }
     render() {
         return <div>
@@ -77,10 +114,10 @@ export class EditPage extends React.Component{
                 <div className="tab-pane fade" id="nav-extraHTML" role="tabpanel" aria-labelledby="nav-extraHTML-tab">
                     <div className="col-10 mx-auto my-3">
                         <div className="mb-3">
-                            <input name="name" onChange={this.handleInputChange} type="text" className="form-control" placeholder="URI страницы"/>
+                            <input value={this.state.name} name="name" onChange={this.handleInputChange} type="text" className="form-control" placeholder="URI страницы"/>
                         </div>
                         <div className="mb-3">
-                            <input name="title" onChange={this.handleInputChange} type="text" className="form-control" placeholder="Заголовок страницы"/>
+                            <input name="title" value={this.state.title} onChange={this.handleInputChange} type="text" className="form-control" placeholder="Заголовок страницы"/>
                         </div>
                     </div>
                 </div>
