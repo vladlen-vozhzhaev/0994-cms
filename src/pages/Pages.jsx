@@ -46,7 +46,7 @@ export class Pages extends React.Component{
                 </tbody>
             </table>
 
-            <NavLink className="btn btn-primary" to="addPage">Добавить страницу</NavLink>
+            <NavLink className="btn btn-primary" to="addPage"><i className="fas fa-plus-square"></i> Добавить страницу</NavLink>
         </div>
     }
 }
